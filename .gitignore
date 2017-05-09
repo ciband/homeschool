@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/homeschool/v15/.suo
+/VBSRobot/VBSRobot/obj
+/VBSRobot/VBSRobot/bin/ARM/Debug
+/VBSRobot/VBSRobot/project.lock.json
+/VBSRobot/VBSRobot/VBSRobot.csproj.user
+/.vs
