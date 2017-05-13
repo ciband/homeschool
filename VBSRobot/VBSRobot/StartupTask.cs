@@ -7,6 +7,7 @@ using Windows.ApplicationModel.Background;
 using Windows.Devices.Gpio;
 using Porrey.Uwp.IoT;
 using System.Threading.Tasks;
+using Win10_LCD;
 // The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
 
 namespace VBSRobot
@@ -27,9 +28,17 @@ namespace VBSRobot
 		private const double MAX_ARM_POSITION = 1.25;
 		private const double ARM_POSITION_STEP = 0.01;
 
+		private const int LCD_DB4 = 24;
+		private const int LCD_DB5 = 5;
+		private const int LCD_DB6 = 6;
+		private const int LCD_DB7 = 13;
+		private const int LCD_E = 23;
+		private const int LCD_RS = 18;
+
         private GpioPin pin;
 		private SoftPwm elbow_servo;
 		private ArmDirection elbowDirection = ArmDirection.Extend;
+		private LCD _lcd = new LCD(16, 2);
 
         StartupTask()
         {
@@ -54,7 +63,7 @@ namespace VBSRobot
 			}
         }
 
-        private void InitGPIO()
+        private async void InitGPIO()
         {
             var gpio = GpioController.GetDefault();
 
@@ -63,15 +72,25 @@ namespace VBSRobot
                 return;
             }
 
+			// turn on eyes
             led_on(gpio.OpenPin(LEFT_EYE_LED_PIN));
             led_on(gpio.OpenPin(RIGHT_EYE_LED_PIN));
+
+			//init elbow servo
 			elbow_servo = new SoftPwm(gpio.OpenPin(ELBOW_SERVO_PIN))
 			{
 				// fill in
 				PulseFrequency = 50, // hz
 				MaximumValue = 2.0,
 				Value = 1.5
-			}; 
+			};
+
+			// init LCD
+			await _lcd.InitAsync(LCD_RS, LCD_E, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
+			await _lcd.clearAsync();
+
+			_lcd.WriteLine("Beep Beep Beep");
+			_lcd.WriteLine("Kill All Humans");
         }
 
 		private void led_on(GpioPin pin)
