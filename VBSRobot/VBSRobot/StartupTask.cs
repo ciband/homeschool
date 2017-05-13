@@ -20,9 +20,9 @@ namespace VBSRobot
 
     public sealed class StartupTask : IBackgroundTask
     {
-        private const int LEFT_EYE_LED_PIN = 20;
-        private const int RIGHT_EYE_LED_PIN = 21;
-		private const int ELBOW_SERVO_PIN = 22;
+        private const int LEFT_EYE_LED_PIN = 17;
+        private const int RIGHT_EYE_LED_PIN = 27;
+		private const int ELBOW_SERVO_PIN = 18;
 
 		private const double MIN_ARM_POSITION = 0.8;
 		private const double MAX_ARM_POSITION = 1.25;
