@@ -40,13 +40,9 @@ namespace VBSRobot
 		private ArmDirection elbowDirection = ArmDirection.Extend;
 		private LCD _lcd = new LCD(16, 2);
 
-        StartupTask()
+        public async void Run(IBackgroundTaskInstance taskInstance)
         {
-            InitGPIO();
-        }
-
-        public void Run(IBackgroundTaskInstance taskInstance)
-        {
+            await InitGPIO();
 			// 
 			// TODO: Insert code to perform background work
 			//
@@ -63,7 +59,7 @@ namespace VBSRobot
 			}
         }
 
-        private async void InitGPIO()
+        private async Task InitGPIO()
         {
             var gpio = GpioController.GetDefault();
 
