@@ -50,7 +50,6 @@ namespace VBSRobot_GUI
         private const int LCD_E = 24;
         private const int LCD_RS = 23;
 
-        // private SoftPwm elbow_servo;
         private PwmController _pwmController;
         private PwmPin _elbowServo;
         private ArmDirection elbowDirection = ArmDirection.Extend;
@@ -66,17 +65,6 @@ namespace VBSRobot_GUI
             this.InitializeComponent();
 
             go();
-
-            
-           /* elbow_servo.StartAsync();
-            elbow_servo.Value = 1.0;
-            elbow_servo.Value = 1.5;
-            elbow_servo.Value = 2.0;
-            for (;;)
-            {
-                MoveArm();
-                Task.Delay(TimeSpan.FromMilliseconds(1000)).Wait();
-            }*/
         }
 
         private async void go()
@@ -86,12 +74,21 @@ namespace VBSRobot_GUI
                 LowLevelDevicesController.DefaultProvider = LightningProvider.GetAggregateProvider();
             }
 
-            await InitGPIO();
+            var gpio = GpioController.GetDefault();
+
+            if (gpio == null)
+            {
+                return;
+            }
+
+            // turn on eyes
+            LEDOn(gpio.OpenPin(LEFT_EYE_LED_PIN));
+            LEDOn(gpio.OpenPin(RIGHT_EYE_LED_PIN));
 
             // init LCD
             _lcd = new LCD(16, 2);
             await _lcd.InitAsync(LCD_RS, LCD_E, LCD_DB4, LCD_DB5, LCD_DB6, LCD_DB7);
-           
+
 
             var c = await PwmController.GetControllersAsync(LightningPwmProvider.GetPwmProvider());
             _pwmController = c[1];
@@ -105,50 +102,20 @@ namespace VBSRobot_GUI
             _media.IsLooping = true;
             _media.SetSource(speechStream, speechStream.ContentType);
             _media.Play();
-            
-            _armTimer = new Timer(async (o) => 
-            //await Task.Run(async () =>
+
+            _armTimer = new Timer(async (o) =>
             {
-                //for (;;)
-               // {
-                    // move arm
-                    await MoveArm();
-                    //await Task.Delay(TimeSpan.FromMilliseconds(20));
-              //  }
+                // move arm
+                await MoveArm();
             }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(20));
 
-            _mouthTimer = new Timer(async (o) => {
+            _mouthTimer = new Timer(async (o) =>
+            {
                 await _lcd.clearAsync();
 
                 _lcd.WriteLine("Beep Beep Beep");
                 _lcd.WriteLine("Kill All Humans");
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
-        }
-
-        private async Task InitGPIO()
-        {
-            var gpio = GpioController.GetDefault();
-
-            if (gpio == null)
-            {
-                return;
-            }
-
-            // turn on eyes
-            LEDOn(gpio.OpenPin(LEFT_EYE_LED_PIN));
-            LEDOn(gpio.OpenPin(RIGHT_EYE_LED_PIN));
-
-            //init elbow servo
-            /*elbow_servo = new SoftPwm(gpio.OpenPin(ELBOW_SERVO_PIN))
-            {
-                // fill in
-                PulseFrequency = 50, // hz
-                MaximumValue = 2.0,
-                Value = 1.5
-            };*/
-
-
-            
         }
 
         private void LEDOn(GpioPin pin)
