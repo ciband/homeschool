@@ -97,7 +97,8 @@ namespace VBSRobot_GUI
 
             _elbowServo.Start();
             _elbowServo.SetActiveDutyCyclePercentage(MIN_ARM_POSITION);
-            var speechStream = await _talk.SynthesizeTextToStreamAsync("kill all humans");
+            _talk.Voice = SpeechSynthesizer.AllVoices.First((vi) => { return vi.Gender == VoiceGender.Female; });
+            var speechStream = await _talk.SynthesizeTextToStreamAsync("Praise God for He is good");
             _media.AutoPlay = true;
             _media.IsLooping = true;
             _media.SetSource(speechStream, speechStream.ContentType);
@@ -113,8 +114,8 @@ namespace VBSRobot_GUI
             {
                 await _lcd.clearAsync();
 
-                _lcd.WriteLine("Beep Beep Beep");
-                _lcd.WriteLine("Kill All Humans");
+                _lcd.WriteLine("Praise God for");
+                _lcd.WriteLine("He is good");
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
         }
 
