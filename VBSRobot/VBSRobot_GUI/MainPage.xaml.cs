@@ -13,6 +13,7 @@ using Windows.Devices.Pwm;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.SpeechSynthesis;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -35,12 +36,15 @@ namespace VBSRobot_GUI
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private const int LEFT_EYE_LED_PIN = 27;
-        private const int RIGHT_EYE_LED_PIN = 5;
+        // private const int LEFT_EYE_LED_PIN = 27;
+        //private const int RIGHT_EYE_LED_PIN = 5;
+        private const int SWITCH_PIN = 5;
         private const int ELBOW_SERVO_PIN = 22;
 
-        private const double MIN_ARM_POSITION = 0.05;
-        private const double MAX_ARM_POSITION = 0.1;
+        //private const double MIN_ARM_POSITION = 0.05;
+        //private const double MAX_ARM_POSITION = 0.1;
+        private const double MIN_ARM_POSITION = 0.07;
+        private const double MAX_ARM_POSITION = 0.08;
         private const double ARM_POSITION_STEP = 0.0005;
 
         private const int LCD_DB4 = 12;
@@ -56,9 +60,11 @@ namespace VBSRobot_GUI
         private LCD _lcd;
         private SpeechSynthesizer _talk = new SpeechSynthesizer();
         private MediaElement _media = new MediaElement();
+        private GpioPin _switch;
 
         private Timer _armTimer;
         private Timer _mouthTimer;
+        private Timer _switchTimer;
 
         public MainPage()
         {
@@ -81,9 +87,8 @@ namespace VBSRobot_GUI
                 return;
             }
 
-            // turn on eyes
-            LEDOn(gpio.OpenPin(LEFT_EYE_LED_PIN));
-            LEDOn(gpio.OpenPin(RIGHT_EYE_LED_PIN));
+            _switch = gpio.OpenPin(SWITCH_PIN);
+            _switch.SetDriveMode(GpioPinDriveMode.Input);
 
             // init LCD
             _lcd = new LCD(16, 2);
@@ -96,7 +101,8 @@ namespace VBSRobot_GUI
             _elbowServo = _pwmController.OpenPin(ELBOW_SERVO_PIN);
 
             _elbowServo.Start();
-            _elbowServo.SetActiveDutyCyclePercentage(MIN_ARM_POSITION);
+
+            _elbowServo.SetActiveDutyCyclePercentage(MAX_ARM_POSITION);
             _talk.Voice = SpeechSynthesizer.AllVoices.First((vi) => { return vi.Gender == VoiceGender.Female; });
             var speechStream = await _talk.SynthesizeTextToStreamAsync("Praise God for He is good");
             _media.AutoPlay = true;
@@ -117,6 +123,28 @@ namespace VBSRobot_GUI
                 _lcd.WriteLine("Praise God for");
                 _lcd.WriteLine("He is good");
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+
+            _switchTimer = new Timer(async (o) =>
+            {
+                var value = _switch.Read();
+                if(value == GpioPinValue.High)
+                {
+                    _armTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    _elbowServo.Stop();
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        _media.Stop();
+                    });
+                } else
+                {
+                    _armTimer.Change(TimeSpan.Zero, TimeSpan.FromMilliseconds(20));
+                    _elbowServo.Start();
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        _media.Play();
+                    });
+                }
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         }
 
         private void LEDOn(GpioPin pin)
