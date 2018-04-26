@@ -40,6 +40,8 @@ namespace Lesson1
                     pin.Write(GpioPinValue.Low);
                 }
 
+                LED_On = !LED_On;
+
                 Task.Delay(TimeSpan.FromMilliseconds(500));
             }
         }
