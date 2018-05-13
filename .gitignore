@@ -13,3 +13,6 @@
 /Sunfounder/.vs
 /Sunfounder/Lesson 1/bin
 /Sunfounder/Lesson 1/obj
+/Sunfounder/Lesson 2/bin/ARM/Debug
+/Sunfounder/Lesson 2/obj
+*.user
