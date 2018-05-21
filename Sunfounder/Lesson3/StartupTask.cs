@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Http;
 using Windows.ApplicationModel.Background;
 using Windows.Devices.Gpio;
+using System.Threading.Tasks;
 
 // The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
 
@@ -12,54 +13,62 @@ namespace Lesson3
 {
     public sealed class StartupTask : IBackgroundTask
     {
-        BackgroundTaskDeferral deferral;
-        private GpioPinValue ledPinValue = GpioPinValue.High;
-        private const int LED_PIN = 5;
-        private const int BUTTON_PIN = 6;
-        private GpioPin ledPin;
-        private GpioPin buttonPin;
+        private BackgroundTaskDeferral deferral;
+        private GpioPin[] ledPins;
 
         public void Run(IBackgroundTaskInstance taskInstance)
         {
             deferral = taskInstance.GetDeferral();
             InitGPIO();
+
+            for(; ;)
+            {
+                foreach (var pin in ledPins)
+                {
+                    led_on(pin);
+                    Task.Delay(TimeSpan.FromMilliseconds(100));
+                    led_off(pin);
+                }
+                Task.Delay(TimeSpan.FromMilliseconds(500));
+                foreach (var pin in ledPins.Reverse())
+                {
+                    led_on(pin);
+                    Task.Delay(TimeSpan.FromMilliseconds(100));
+                    led_off(pin);
+                }
+            }
         }
+
         private void InitGPIO()
         {
             var controller = GpioController.GetDefault();
 
-            ledPin = controller.OpenPin(LED_PIN);
-            buttonPin = controller.OpenPin(BUTTON_PIN);
-
-            ledPin.Write(GpioPinValue.High);
-            ledPin.SetDriveMode(GpioPinDriveMode.Output);
-
-            // Check if input pull-up resistors are supported
-            if (buttonPin.IsDriveModeSupported(GpioPinDriveMode.InputPullUp))
+            // init pins
+            ledPins = new GpioPin[]
             {
-                buttonPin.SetDriveMode(GpioPinDriveMode.InputPullUp);
-            }
-            else
+                controller.OpenPin(1),
+                controller.OpenPin(2),
+                controller.OpenPin(3),
+                controller.OpenPin(4),
+                controller.OpenPin(5),
+                controller.OpenPin(6)
+            };
+
+            // set pins to output
+            foreach (var pin in ledPins)
             {
-                buttonPin.SetDriveMode(GpioPinDriveMode.Input);
+                pin.SetDriveMode(GpioPinDriveMode.Output);
             }
-
-            // Set a debounce timeout to filter out switch bounce noise from a button press
-            buttonPin.DebounceTimeout = TimeSpan.FromMilliseconds(50);
-
-            // Register for the ValueChanged event so our buttonPin_ValueChanged 
-            // function is called when the button is pressed
-            buttonPin.ValueChanged += buttonPin_ValueChanged;
         }
 
-        private void buttonPin_ValueChanged(GpioPin sender, GpioPinValueChangedEventArgs e)
+        private void led_on(GpioPin pin)
         {
-            // toggle the state of the LED every time the button is pressed
-            if (e.Edge == GpioPinEdge.FallingEdge)
-            {
-                ledPinValue = (ledPinValue == GpioPinValue.Low) ? GpioPinValue.High : GpioPinValue.Low;
-                ledPin.Write(ledPinValue);
-            }
+            pin.Write(GpioPinValue.Low);
+        }
+
+        private void led_off(GpioPin pin)
+        {
+            pin.Write(GpioPinValue.High);
         }
     }
 }
