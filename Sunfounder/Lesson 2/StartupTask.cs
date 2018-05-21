@@ -14,7 +14,7 @@ namespace Lesson2
 {
     public sealed class StartupTask : IBackgroundTask
     {
-        BackgroundTaskDeferral deferral;
+        private BackgroundTaskDeferral deferral;
         private GpioPinValue ledPinValue = GpioPinValue.High;
         private const int LED_PIN = 5;
         private const int BUTTON_PIN = 6;
