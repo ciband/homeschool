@@ -5,12 +5,10 @@ using System.Text;
 using System.Net.Http;
 using Windows.ApplicationModel.Background;
 using Windows.Devices.Gpio;
-using System.Threading.Tasks;
-using Windows.System.Threading;
 
 // The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
 
-namespace Lesson2
+namespace Lesson3
 {
     public sealed class StartupTask : IBackgroundTask
     {
@@ -63,5 +61,5 @@ namespace Lesson2
                 ledPin.Write(ledPinValue);
             }
         }
-     }
+    }
 }
