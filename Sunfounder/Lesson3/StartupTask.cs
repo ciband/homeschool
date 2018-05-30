@@ -16,26 +16,29 @@ namespace Lesson3
         private BackgroundTaskDeferral deferral;
         private GpioPin[] ledPins;
 
-        public void Run(IBackgroundTaskInstance taskInstance)
+        public async void Run(IBackgroundTaskInstance taskInstance)
         {
             deferral = taskInstance.GetDeferral();
             InitGPIO();
-
+            
             for(; ;)
             {
                 foreach (var pin in ledPins)
                 {
                     led_on(pin);
-                    Task.Delay(TimeSpan.FromMilliseconds(100));
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     led_off(pin);
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                 }
-                Task.Delay(TimeSpan.FromMilliseconds(500));
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
                 foreach (var pin in ledPins.Reverse())
                 {
                     led_on(pin);
-                    Task.Delay(TimeSpan.FromMilliseconds(100));
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     led_off(pin);
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                 }
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
             }
         }
 
@@ -46,18 +49,19 @@ namespace Lesson3
             // init pins
             ledPins = new GpioPin[]
             {
-                controller.OpenPin(1),
-                controller.OpenPin(2),
-                controller.OpenPin(3),
                 controller.OpenPin(4),
                 controller.OpenPin(5),
-                controller.OpenPin(6)
+                controller.OpenPin(6),
+                controller.OpenPin(13),
+                controller.OpenPin(19),
+                controller.OpenPin(26)
             };
 
             // set pins to output
             foreach (var pin in ledPins)
             {
                 pin.SetDriveMode(GpioPinDriveMode.Output);
+                led_off(pin);
             }
         }
 
