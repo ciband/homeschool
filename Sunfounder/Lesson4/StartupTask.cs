@@ -31,19 +31,17 @@ namespace Lesson4
 
             var pin = pwmController.OpenPin(18);
             pin.Start();
-            //slDutyCycle.Value = 100;
 
             for (; ; )
             {
-                for (var i = 0; i <= 100; ++i)
+                for (var i = 0.0; i <= 1.0; i += 0.05)
                 {
-                    pin.SetActiveDutyCyclePercentage(i / 100.0);
+                    pin.SetActiveDutyCyclePercentage(i);
                     await Task.Delay(TimeSpan.FromMilliseconds(20));
                 }
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                for (var i = 100; i >= 0; --i)
+                for (var i = 1.0; i >= 0.0; i -= 0.05)
                 {
-                    pin.SetActiveDutyCyclePercentage(i / 100.0);
+                    pin.SetActiveDutyCyclePercentage(i);
                     await Task.Delay(TimeSpan.FromMilliseconds(20));
                 }
             }
